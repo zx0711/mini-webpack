@@ -3,11 +3,11 @@
  * @Author: xiao.zhang
  * @Date: 2021-09-14 21:32:12
  * @LastEditors: xiao.zhang
- * @LastEditTime: 2021-09-14 22:32:59
+ * @LastEditTime: 2021-09-14 23:14:00
  */
 const fs = require('fs');
 const path = require('path');
-// 用于将输入代码解析城抽象语法树（AST）
+// 用于将源代码解析城抽象语法树（AST）
 const parser = require('@babel/parser');
 // 用于对输入的抽象语法树进行遍历
 const traverse = require('@babel/traverse').default;
@@ -15,11 +15,19 @@ const traverse = require('@babel/traverse').default;
 const babel = require('@babel/core');
 const options = require('./mini-webpack.config');
 
+// 抄自文章链接：https://mp.weixin.qq.com/s/k2Js7H9DXzZ7Sbc-dQ_AiQ
 class MiniWebpack {
   constructor(options) {
     this.options = options;
   }
-  // 编译阶段，es6语法转es5
+  /***
+   * 构建阶段（babel贯穿整个构建阶段）
+   * 看来babel的作用好大
+   * babel在编译阶段做了好多事情，比如
+   *   1，使用babel/parser转为AST
+   *   2，旧AST转换为新的AST,也是使用的babel中的插件，比如babel/traverse
+   *   3，新的AST转为ES5语法，也是babel使用的@babel/preset-env来转的
+   *  */
   parse = (filename) => {
     // 读取文件
     const fileBuffer = fs.readFileSync(filename, 'utf-8');
@@ -37,7 +45,7 @@ class MiniWebpack {
         dependencies[node.source.value] = newDirname;
       },
     });
-    // 将抽象语法树转换成代码
+    // 将抽象语法树转换成代码，@babel/preset-env ES6+的代码转为ES5
     const { code } = babel.transformFromAst(ast, null, {
       presets: ['@babel/preset-env'],
     });
@@ -49,8 +57,9 @@ class MiniWebpack {
     };
   };
 
-  // 编译阶段，生成对象
+  // 编译阶段，生成依赖关系对象，
   analyse = (entry) => {
+    // 解析入口文件
     const entryModule = this.parse(entry);
     const graphArray = [entryModule];
 
@@ -61,7 +70,7 @@ class MiniWebpack {
         graphArray.push(this.parse(dependencies[filename]));
       });
     }
-
+    // 生成依赖图谱对象，文件名为key
     const grash = {};
     graphArray.forEach(({ filename, dependencies, code }) => {
       grash[filename] = {
