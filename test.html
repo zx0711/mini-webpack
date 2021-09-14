@@ -1,0 +1,87 @@
+<!--
+ * @Description: 
+ * @Author: xiao.zhang
+ * @Date: 2021-09-14 22:13:01
+ * @LastEditors: xiao.zhang
+ * @LastEditTime: 2021-09-14 22:36:24
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      parse = (filename) => {
+        return {
+          filename,
+          dependencies: {},
+          code: 'YYYYYYYY1',
+        };
+      };
+      analyse = (entryModule) => {
+        const graphArray = [entryModule];
+
+        // 循环解析模块，保存信息
+        for (let i = 0; i < graphArray.length; ++i) {
+          const { dependencies } = graphArray[i];
+          console.log('时间过的真快', Object.keys(dependencies));
+          Object.keys(dependencies).forEach((filename) => {
+            graphArray.push(parse(dependencies[filename]));
+          });
+        }
+
+        console.log('======graphArray', graphArray);
+
+        const grash = {};
+        graphArray.forEach(({ filename, dependencies, code }) => {
+          grash[filename] = {
+            dependencies,
+            code,
+          };
+        });
+
+        const grashStr = JSON.stringify(grash);
+        console.log('=========grash', grash, grashStr);
+        generate(grashStr, './src/index.js');
+      };
+
+      generate = (graph, entry) => {
+        const generateResult = `
+        (function(graph){
+            function require(filename){
+                function localRequire(relativePath){
+                    return require(graph[filename].dependencies[relativePath]);
+                }
+                const exports = {};
+                (function(require, exports, code){
+                    eval(code);
+                })(localRequire, exports, graph[filename].code)
+                return exports;
+            }
+            
+            require('${entry}');
+        })(${graph})
+        `;
+
+        console.log('=====generateResult', generateResult);
+        fileOutput(generateResult);
+      };
+
+      fileOutput = (output, code) => {
+        console.log(code);
+      };
+
+      const obj = {
+        filename: './src/index.js',
+        code: 'XXXXXX',
+        dependencies: { './a.js': './src/a.js', './b.js': './src/b.js' },
+      };
+
+      analyse(obj);
+    </script>
+  </body>
+</html>
