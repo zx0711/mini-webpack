@@ -3,7 +3,7 @@
  * @Author: xiao.zhang
  * @Date: 2021-09-14 21:32:12
  * @LastEditors: xiao.zhang
- * @LastEditTime: 2021-09-14 23:14:00
+ * @LastEditTime: 2021-09-15 10:32:21
  */
 const fs = require('fs');
 const path = require('path');
@@ -17,11 +17,13 @@ const options = require('./mini-webpack.config');
 
 // 抄自文章链接：https://mp.weixin.qq.com/s/k2Js7H9DXzZ7Sbc-dQ_AiQ
 class MiniWebpack {
+  // 初始化，plugins是在初始化的时候被调用
   constructor(options) {
     this.options = options;
   }
   /***
-   * 构建阶段（babel贯穿整个构建阶段）
+   * 编译阶段（babel贯穿整个构建阶段）
+   * 编译之前先进行loader的使用
    * 看来babel的作用好大
    * babel在编译阶段做了好多事情，比如
    *   1，使用babel/parser转为AST
