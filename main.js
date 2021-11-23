@@ -3,7 +3,7 @@
  * @Author: xiao.zhang
  * @Date: 2021-09-14 21:32:12
  * @LastEditors: xiao.zhang
- * @LastEditTime: 2021-09-15 10:32:21
+ * @LastEditTime: 2021-11-18 23:39:27
  */
 const fs = require('fs');
 const path = require('path');
@@ -33,6 +33,7 @@ class MiniWebpack {
   parse = (filename) => {
     // 读取文件
     const fileBuffer = fs.readFileSync(filename, 'utf-8');
+    console.log('fileBuffer', fileBuffer);
     // 转换成抽象语法树
     const ast = parser.parse(fileBuffer, { sourceType: 'module' });
 
@@ -82,7 +83,7 @@ class MiniWebpack {
     });
     return grash;
   };
-  // 输出阶段
+  // 生成阶段
   generate = (graph, entry) => {
     return `
     (function(graph){
@@ -114,6 +115,7 @@ class MiniWebpack {
     fs.writeFileSync(outputPath, code, 'utf-8');
   };
   // 初始化之后，生成compiler,最先调用run方法开启下面的编译和输出阶段
+
   run = () => {
     const { entry, output } = this.options;
     const grash = this.analyse(entry);

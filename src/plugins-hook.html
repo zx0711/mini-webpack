@@ -1,0 +1,54 @@
+<!--
+ * @Description: 
+ * @Author: xiao.zhang
+ * @Date: 2021-11-17 10:59:58
+ * @LastEditors: xiao.zhang
+ * @LastEditTime: 2021-11-18 22:52:29
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const hooks = {
+        // run开始读取文件之前
+        // emit生成资源到output之前
+        AsyncSeriesHook: ['run', 'emit'],
+        // compile一个新的编译创建之后
+        // done 编译完成
+        SyncHook: ['compile', 'done'],
+      };
+
+      class Test {
+        constructor(props) {
+          this.hooks = {
+            run: {
+              tap: (name, cb) => {
+                console.log(name, cb);
+              },
+            },
+          };
+        }
+      }
+      const compiler = new Test();
+
+      // webpack配置属性
+      const options = {};
+
+      class My {
+        apply(compiler) {
+          compiler.hooks.run.tap('plugin', (compilation, callback) => {
+            console.log('构建过程开始', compilation);
+          });
+        }
+      }
+      const myPluginsInstance = new My(options);
+      myPluginsInstance.apply(compiler);
+    </script>
+  </body>
+</html>
